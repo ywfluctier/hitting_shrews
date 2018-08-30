@@ -52,7 +52,7 @@ shy = [pygame.transform.scale(shy_img.subsurface((x*600, 0), (600, 461)), (140, 
 heart = [pygame.transform.scale(heart_img, (x, x)) for x in [30, 36, 42]]
 
 # 5 - Load audios
-hit = pygame.mixer.Sound("resources/audio/hit2.wav")
+hit = pygame.mixer.Sound("resources/audio/hit22.wav")
 kiss_a = pygame.mixer.Sound("resources/audio/kiss.wav")
 up_a = pygame.mixer.Sound("resources/audio/apper.wav")
 hit.set_volume(0.8)
