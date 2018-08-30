@@ -34,7 +34,7 @@ raw_hole = pygame.image.load("resources/images/hole.png")
 raw_shrew = pygame.image.load("resources/images/shrew.png")
 raw_hammer = pygame.image.load("resources/images/hammer.png")
 raw_kisses = pygame.image.load("resources/images/kisses.png")
-raw_gameover = pygame.image.load("resources/images/gameover.png")
+raw_gameover = pygame.image.load("resources/images/end.png")
 background = pygame.transform.scale(raw_bg, (width, height))
 hole = pygame.transform.scale(raw_hole, (150, 150))
 shrew = pygame.transform.scale(raw_shrew, (150, 150))
@@ -52,8 +52,12 @@ shy = [pygame.transform.scale(shy_img.subsurface((x*600, 0), (600, 461)), (140, 
 heart = [pygame.transform.scale(heart_img, (x, x)) for x in [30, 36, 42]]
 
 # 5 - Load audios
-hit = pygame.mixer.Sound("resources/audio/hit.ogg")
-hit.set_volume(0.5)
+hit = pygame.mixer.Sound("resources/audio/hit2.wav")
+kiss_a = pygame.mixer.Sound("resources/audio/kiss.wav")
+up_a = pygame.mixer.Sound("resources/audio/apper.wav")
+hit.set_volume(0.8)
+kiss_a.set_volume(0.5)
+up_a.set_volume(0.2)
 
 # 6 - Init textbox
 font = pygame.font.Font(None, 44)
@@ -108,13 +112,14 @@ def maingame(heart_rate=heart_rate):
                 screen.blit(shrew, positions_s[index])
                 mid = time_teller() - shrew_ques[index]
                 if mid > hold_time_before_hit + kissing_time:  # vanishing shrew
+                    heart_rate += 10
                     shrew_ques[index] = 0
                     audio_k[index] = False
                 elif mid > hold_time_before_hit:  # kissing shrew
                     if not audio_k[index]:
-                        # hit.play()# play audio
+                        kiss_a.play()# play audio
                         audio_k[index] = True
-                        heart_rate += 10
+                        #heart_rate += 10
                     mid -= hold_time_before_hit
                     screen.blit(
                         pygame.transform.scale(kisses, (25 + mid / 60, 25 + mid / 60)),
@@ -139,7 +144,10 @@ def maingame(heart_rate=heart_rate):
 
         # generate shrew
         if shrew_ques.values().count(0) > 3:
-                shrew_ques[generate_shrew(player_score, shrew_ques)] = time_teller()
+            new_shrew = generate_shrew(player_score, shrew_ques)
+            if new_shrew is not None:
+                shrew_ques[new_shrew] = time_teller()
+                up_a.play()
 
         # mouse & keyboard
         for event in pygame.event.get():
