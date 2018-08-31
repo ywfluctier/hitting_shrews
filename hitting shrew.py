@@ -54,7 +54,7 @@ heart = [pygame.transform.scale(heart_img, (x, x)) for x in [30, 36, 42]]
 # 5 - Load audios
 hit = pygame.mixer.Sound("resources/audio/hit22.wav")
 kiss_a = pygame.mixer.Sound("resources/audio/kiss.wav")
-up_a = pygame.mixer.Sound("resources/audio/apper.wav")
+up_a = pygame.mixer.Sound("resources/audio/appear.wav")
 hit.set_volume(0.8)
 kiss_a.set_volume(0.5)
 up_a.set_volume(0.2)
