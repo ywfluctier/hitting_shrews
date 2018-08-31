@@ -19,14 +19,14 @@ positions_h = [(posx, posy) for posy in [115, 245, 375] for posx in [110, 300, 4
 positions_k = [(posx, posy) for posy in [190, 320, 450] for posx in [150, 340, 530]]
 
 ## heart_rate ( over-high heart rate claims to failure...)
-heart_rate, mild_rate, blush_rate, over_rate = 70, 140, 220, 300
-delayed_time_on_hit = 250               ## lasting time after hit
-hold_time_before_hit = 1300             ## waiting time before hit
-kissing_time = 400
-
-level_a = 100
-level_b = 200
-level_c = 350
+heart_rate, mild_rate, blush_rate, over_rate = 70, 140, 210, 280
+delayed_time_on_hit = [250, 200, 180, 150, 120, 90, 60]               ## lasting time after hit
+hold_time_before_hit = [1300, 1050, 800, 650, 500, 350, 200]             ## waiting time before hit
+kissing_time = [400, 300, 250, 200, 150, 100, 50]
+level_score = [0, 10, 20, 30, 40, 50, 60]
+shrew_gen_density = [40, 30, 20, 7, 5, 3, 2]
+holes_kept = [7, 6, 5, 4, 3, 2, 1]
+level_cur, LEVEL_NUM = 0, 6
 
 # 4 - Load images
 raw_bg = pygame.image.load("resources/images/background.jpg")
@@ -76,26 +76,20 @@ def shining_animation(group, interval, time, pos, frame_num=None, adjust_factor=
         frame_num = len(group)
     temp = time / interval % frame_num
     screen.blit(group[temp], (pos[0] + adjust_factor * temp, pos[1] + adjust_factor * temp))
-def generate_shrew(player_score, shrews):
+def generate_shrew(shrews):
     temp = random.randint(0, 8)
     while shrews[temp]:
         temp = random.randint(0, 8)
-    if player_score < level_a:
-        return temp if not time_teller() % 40 else None
-    elif player_score < level_b:
-        return temp if not time_teller() % 30 else None
-    elif player_score < level_c:
-        return temp if not time_teller() % 20 else None
-    else:
-        return temp if not time_teller() % 7 else None
+    return temp if not time_teller() % shrew_gen_density[level_cur] else None
+
 def maingame(heart_rate=heart_rate):
-    global screen
+    global screen, level_cur
     audio_k = [False for x in range(9)]  ## kissed yet?
     shrew_ques = {x: 0 for x in range(9)}
     hammer_on = {x: 0 for x in range(9)}
     player_score, heart_rate = 0, 70  ## initial score & heart_rate
     while True:
-        if heart_rate > over_rate:
+        if heart_rate >= over_rate:
             screen.blit(gameover, (0, 0))
             pygame.display.flip()
             break
@@ -106,21 +100,21 @@ def maingame(heart_rate=heart_rate):
             if hammer_on[index]:
                 screen.blit(shrew, positions_s[index])
                 screen.blit(hammer, positions_h[index])
-                if time_teller() - hammer_on[index] > delayed_time_on_hit:
+                if time_teller() - hammer_on[index] > delayed_time_on_hit[level_cur]:
                     shrew_ques[index] = hammer_on[index] = 0
             elif shrew_ques[index]:
                 screen.blit(shrew, positions_s[index])
                 mid = time_teller() - shrew_ques[index]
-                if mid > hold_time_before_hit + kissing_time:  # vanishing shrew
+                if mid > hold_time_before_hit[level_cur] + kissing_time[level_cur]:  # vanishing shrew
                     heart_rate += 10
                     shrew_ques[index] = 0
                     audio_k[index] = False
-                elif mid > hold_time_before_hit:  # kissing shrew
+                elif mid > hold_time_before_hit[level_cur]:  # kissing shrew
                     if not audio_k[index]:
                         kiss_a.play()# play audio
                         audio_k[index] = True
                         #heart_rate += 10
-                    mid -= hold_time_before_hit
+                    mid -= hold_time_before_hit[level_cur]
                     screen.blit(
                         pygame.transform.scale(kisses, (25 + mid / 60, 25 + mid / 60)),
                         (positions_k[index][0], positions_k[index][1] - mid / 20))
@@ -143,8 +137,8 @@ def maingame(heart_rate=heart_rate):
             shining_animation(heart, 100, time, (70, 70), 3, -3)
 
         # generate shrew
-        if shrew_ques.values().count(0) > 3:
-            new_shrew = generate_shrew(player_score, shrew_ques)
+        if shrew_ques.values().count(0) > holes_kept[level_cur]:
+            new_shrew = generate_shrew(shrew_ques)
             if new_shrew is not None:
                 shrew_ques[new_shrew] = time_teller()
                 up_a.play()
@@ -158,10 +152,12 @@ def maingame(heart_rate=heart_rate):
                 if K_0 < event.key <= K_9:
                     mid = event.key - 49
                     # if shrew being up & not kissing
-                    if shrew_ques[mid] and time_teller() - shrew_ques[mid] < hold_time_before_hit:
+                    if shrew_ques[mid] and time_teller() - shrew_ques[mid] < hold_time_before_hit[level_cur]:
                         hit.play()
                         player_score += 10
-                        shrew_ques[event.key - 49] += delayed_time_on_hit
+                        if level_cur < LEVEL_NUM:
+                            level_cur += player_score >= level_score[level_cur + 1]
+                        shrew_ques[event.key - 49] += delayed_time_on_hit[level_cur]
                         hammer_on[mid] = time_teller()
         pygame.display.flip()
     while True:
