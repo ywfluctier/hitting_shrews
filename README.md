@@ -20,5 +20,5 @@
 
 另：资源网站附下  
 - 音效资源网站： [爱给网](http://www.aigei.com/)
-- 音频截断/转码网站: [Audio Cutter](https://mp3cut.net/tw/)
+- 音频截断/转码网站： [Audio Cutter](https://mp3cut.net/tw/)
 - 在线PS： [ps在线版Photoshop在线精简版](http://www.uupoop.com/)
